@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es" data-tema="medianoche">
+<head>
+<meta charset="UTF-8">
+<script>
+  // tema y preferencias visuales antes de pintar nada, para que no parpadee lo de por defecto
+  try {
+    const e = JSON.parse(localStorage.getItem("music.estado") || "{}");
+    if (e.tema) document.documentElement.dataset.tema = e.tema;
+    if (e.animaciones === "reducidas") document.documentElement.classList.add("reducido");
+    if (e.fondoVivo === false) document.documentElement.classList.add("quieto");
+  } catch (_) {}
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Music</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icono.png" type="image/png">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="stylesheet" href="music.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></symbol>
+  <symbol id="i-pausa" viewBox="0 0 24 24"><rect x="6" y="4.5" width="4.2" height="15" rx="1.4"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.4"/></symbol>
+  <symbol id="i-sig" viewBox="0 0 24 24"><path d="M3.5 6.1v11.8a.9.9 0 0 0 1.4.74l8.1-5.9a.9.9 0 0 0 0-1.48L4.9 5.36a.9.9 0 0 0-1.4.74zM12 6.1v11.8a.9.9 0 0 0 1.4.74l8.1-5.9a.9.9 0 0 0 0-1.48l-8.1-5.9A.9.9 0 0 0 12 6.1z"/></symbol>
+  <symbol id="i-ant" viewBox="0 0 24 24"><path d="M20.5 6.1v11.8a.9.9 0 0 1-1.4.74L11 12.74a.9.9 0 0 1 0-1.48l8.1-5.9a.9.9 0 0 1 1.4.74zM12 6.1v11.8a.9.9 0 0 1-1.4.74l-8.1-5.9a.9.9 0 0 1 0-1.48l8.1-5.9A.9.9 0 0 1 12 6.1z"/></symbol>
+  <symbol id="i-mezcla" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 7h3.2c1.6 0 3 .8 3.9 2.1l3.8 5.8c.9 1.3 2.3 2.1 3.9 2.1H21M3 17h3.2c1.6 0 3-.8 3.9-2.1M13.9 9.1c.9-1.3 2.3-2.1 3.9-2.1H21M18.5 4.5 21 7l-2.5 2.5M18.5 14.5 21 17l-2.5 2.5"/></symbol>
+  <symbol id="i-repite" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M17 3l3 3-3 3M4 11V9.5A3.5 3.5 0 0 1 7.5 6H20M7 21l-3-3 3-3M20 13v1.5a3.5 3.5 0 0 1-3.5 3.5H4"/></symbol>
+  <symbol id="i-baja" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M6 9.5l6 6 6-6"/></symbol>
+  <symbol id="i-atras" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-dcha" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M9.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-musica" viewBox="0 0 24 24"><path d="M9.2 18.3V7.4c0-.5.3-.9.8-1l9-2.2c.6-.1 1.2.3 1.2 1v10.5h-2V8.1l-7 1.7v8.5z"/><circle cx="6.6" cy="18.3" r="3"/><circle cx="17.6" cy="15.9" r="3"/></symbol>
+  <symbol id="i-chispas" viewBox="0 0 24 24"><path d="M10 2.5c.3 0 .5.2.6.5l1.2 4.1a4 4 0 0 0 2.7 2.7l4.1 1.2c.6.2.6 1 0 1.2l-4.1 1.2a4 4 0 0 0-2.7 2.7l-1.2 4.1c-.2.6-1 .6-1.2 0l-1.2-4.1a4 4 0 0 0-2.7-2.7l-4.1-1.2c-.6-.2-.6-1 0-1.2l4.1-1.2a4 4 0 0 0 2.7-2.7L9.4 3c.1-.3.3-.5.6-.5zM18.5 1.5c.2 0 .3.1.4.3l.4 1.3c.1.4.4.7.8.8l1.3.4c.4.1.4.6 0 .7l-1.3.4c-.4.1-.7.4-.8.8l-.4 1.3c-.1.4-.6.4-.7 0l-.4-1.3c-.1-.4-.4-.7-.8-.8l-1.3-.4c-.4-.1-.4-.6 0-.7l1.3-.4c.4-.1.7-.4.8-.8l.4-1.3c.1-.2.2-.3.3-.3z"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.3"/><circle cx="9" cy="17" r="2.3"/></g></symbol>
+  <symbol id="i-buscar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.6"/><path d="M15.8 15.8L20 20"/></g></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-mas" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18.5" cy="12" r="2"/></symbol>
+  <symbol id="i-corazon" viewBox="0 0 24 24"><path d="M12 20.6c-.3 0-.6-.1-.8-.3C6.3 16.2 2.8 13 2.8 8.9 2.8 6 5 3.8 7.8 3.8c1.7 0 3.2.8 4.2 2.1 1-1.3 2.5-2.1 4.2-2.1 2.8 0 5 2.2 5 5.1 0 4.1-3.5 7.3-8.4 11.4-.2.2-.5.3-.8.3z"/></symbol>
+  <symbol id="i-corazon-v" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 19.6C7 15.4 3.8 12.6 3.8 8.9c0-2.3 1.8-4.1 4-4.1 1.7 0 3 .9 4.2 2.6 1.2-1.7 2.5-2.6 4.2-2.6 2.2 0 4 1.8 4 4.1 0 3.7-3.2 6.5-8.2 10.7z"/></symbol>
+  <symbol id="i-cola" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h9"/></g><path d="M16 14.2v5.6c0 .5.5.7.9.5l4.3-2.8c.3-.2.3-.7 0-.9l-4.3-2.8c-.4-.3-.9 0-.9.4z"/></symbol>
+  <symbol id="i-a-continuacion" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M4 12h7M4 17h7"/><path d="M15 12.5l3.5 3.5L15 19.5M18.5 16H14"/></g></symbol>
+  <symbol id="i-luna" viewBox="0 0 24 24"><path d="M20.3 14.6A8.6 8.6 0 0 1 9.4 3.7a.7.7 0 0 0-.9-.9 9.4 9.4 0 1 0 12.7 12.7.7.7 0 0 0-.9-.9z"/></symbol>
+  <symbol id="i-letra" viewBox="0 0 24 24"><path d="M5.5 3.5h13a3 3 0 0 1 3 3v8.6a3 3 0 0 1-3 3h-6.2l-4.4 3.3c-.7.5-1.6 0-1.6-.8v-2.5H5.5a3 3 0 0 1-3-3V6.5a3 3 0 0 1 3-3zm2.3 5.3a1.6 1.6 0 1 0 0 3.2c.3 0 .5 0 .7-.1-.3.9-.9 1.5-1.7 1.8a.6.6 0 0 0 .4 1.1c1.9-.5 3.1-2.2 3.1-4.4a1.9 1.9 0 0 0-2.5-1.6zm6 0a1.6 1.6 0 1 0 0 3.2c.3 0 .5 0 .7-.1-.3.9-.9 1.5-1.7 1.8a.6.6 0 0 0 .4 1.1c1.9-.5 3.1-2.2 3.1-4.4a1.9 1.9 0 0 0-2.5-1.6z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-descarga" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></g></symbol>
+  <symbol id="i-compartir" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M8 7.5l4-4 4 4M7 11H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></g></symbol>
+  <symbol id="i-copiar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.5"/><path d="M15.5 5.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8.5a2 2 0 0 0 2 2h.5"/></g></symbol>
+  <symbol id="i-lapiz" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5l4 4M4 20l1-4.5L16 4.5a2 2 0 0 1 2.8 0l.7.7a2 2 0 0 1 0 2.8L8.5 19z"/></g></symbol>
+  <symbol id="i-papelera" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M9.5 7V4.8c0-.4.4-.8.8-.8h3.4c.4 0 .8.4.8.8V7M6.5 7l.8 12c0 .6.5 1 1.1 1h7.2c.6 0 1.1-.4 1.1-1l.8-12M10 11v5.5M14 11v5.5"/></symbol>
+  <symbol id="i-persona" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20c.8-3.6 3.8-5.6 7.5-5.6s6.7 2 7.5 5.6"/></g></symbol>
+  <symbol id="i-refrescar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4.5H15"/></g></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></g></symbol>
+  <symbol id="i-orden" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4M13.5 7.5 17 4l3.5 3.5"/></g></symbol>
+  <symbol id="i-lista-mas" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h12M4 11h12M4 16h7M17.5 13.5v7M14 17h7"/></g></symbol>
+  <symbol id="i-seleccionar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M8 12.2l2.8 2.8L16.2 9.4"/></g></symbol>
+  <symbol id="i-camara" viewBox="0 0 24 24"><path d="M9.2 4.5h5.6c.6 0 1.1.3 1.4.8l.9 1.4h2.4A2.5 2.5 0 0 1 22 9.2v8.3a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 17.5V9.2a2.5 2.5 0 0 1 2.5-2.5h2.4l.9-1.4c.3-.5.8-.8 1.4-.8zM12 9.2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></symbol>
+  <symbol id="i-fuego" viewBox="0 0 24 24"><path d="M12.6 2.3c.4-.3 1-.1 1.1.4.5 2.4 1.9 4 3.4 5.7 1.6 1.8 3.4 3.8 3.4 7a8.5 8.5 0 0 1-17 0c0-2.5 1.1-4.4 2.6-5.7.4-.4 1.1-.1 1.1.5 0 1.3.5 2.4 1.4 3 0-4.5 1.7-8.4 4-10.9z"/></symbol>
+  <symbol id="i-globo" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.3 3.4 5.2 3.4 8.5s-1.1 6.2-3.4 8.5c-2.3-2.3-3.4-5.2-3.4-8.5S9.7 5.8 12 3.5z"/></g></symbol>
+</svg>
+
+<!-- Fondo: la portada de lo que suena, desenfocada, y tres manchas de luz del tema -->
+<div id="fondo" aria-hidden="true">
+  <div class="capa-fondo" id="fondo-a"></div>
+  <div class="capa-fondo" id="fondo-b"></div>
+  <i class="mancha m1"></i><i class="mancha m2"></i><i class="mancha m3"></i>
+  <div class="velo"></div>
+</div>
+
+<div id="pantallas">
+
+  <!-- ============================================================ MÚSICA -->
+  <section class="pantalla activa" id="p-musica" data-pestana="musica">
+    <div class="barra-sup"><span class="barra-titulo" data-t="musica">Música</span></div>
+    <header class="titular">
+      <div>
+        <p class="saludo" id="saludo">&nbsp;</p>
+        <h1 data-t="musica">Música</h1>
+        <p class="sub" id="resumen">&nbsp;</p>
+      </div>
+      <button class="avatar" data-t-aria="tuPerfil"><span class="avatar-img"></span></button>
+    </header>
+
+    <label class="buscador">
+      <svg><use href="#i-buscar"/></svg>
+      <input id="buscar" type="search" data-t-ph="buscarEnTuMusica" autocomplete="off" spellcheck="false" enterkeyhint="search">
+      <button type="button" class="buscador-borrar" id="buscar-borrar" data-t-aria="borrarBusqueda" hidden><svg><use href="#i-x"/></svg></button>
+    </label>
+
+    <div class="segmentos" id="seg-musica" role="tablist">
+      <i class="segmento-luz"></i>
+      <button class="segmento" data-vista="canciones" aria-pressed="true" data-t="canciones">Canciones</button>
+      <button class="segmento" data-vista="artistas" aria-pressed="false" data-t="artistas">Artistas</button>
+      <button class="segmento" data-vista="listas" aria-pressed="false" data-t="listas">Listas</button>
+    </div>
+
+    <div id="v-canciones">
+      <section class="bloque-carrusel" id="bloque-recientes" hidden>
+        <h3 class="titulo-grupo" data-t="escuchadoHacePoco">Escuchado hace poco</h3>
+        <div class="carrusel" id="carrusel"></div>
+      </section>
+      <div class="fila-acciones">
+        <button class="pildora primaria" id="btn-todo-play"><svg><use href="#i-play"/></svg><span data-t="reproducir">Reproducir</span></button>
+        <button class="pildora" id="btn-todo-mezcla"><svg><use href="#i-mezcla"/></svg><span data-t="aleatorio">Aleatorio</span></button>
+      </div>
+      <div class="barra-orden">
+        <span id="cuenta-canciones"></span>
+        <span class="barra-orden-botones">
+          <button class="enlace-orden" id="btn-seleccionar"><svg><use href="#i-seleccionar"/></svg><span data-t="seleccionar">Seleccionar</span></button>
+          <button class="enlace-orden" id="btn-orden"><svg><use href="#i-orden"/></svg><span id="orden-texto"></span></button>
+        </span>
+      </div>
+      <ul class="lista-canciones" id="lista"></ul>
+    </div>
+    <div id="v-artistas" hidden><div class="rejilla-artistas" id="rejilla-artistas"></div></div>
+    <div id="v-listas" hidden><div class="rejilla-listas" id="rejilla-listas"></div></div>
+
+    <div class="sin-resultados" id="sin-resultados" hidden>
+      <svg><use href="#i-buscar"/></svg>
+      <p id="sin-resultados-texto"></p>
+      <button class="pildora" id="buscar-fuera"><svg><use href="#i-chispas"/></svg><span data-t="buscarlaParaAnadirla">Buscarla para añadirla</span></button>
+    </div>
+
+    <section class="vacio" id="vacio" hidden>
+      <div class="vacio-icono"><svg><use href="#i-musica"/></svg></div>
+      <h2 data-t="vacioTitulo">Tu música empieza aquí</h2>
+      <p data-t="vacioTexto"></p>
+      <button class="pildora primaria" id="vacio-descubrir"><svg><use href="#i-chispas"/></svg><span data-t="irADescubrir">Ir a Descubrir</span></button>
+    </section>
+  </section>
+
+  <!-- ========================================================= DESCUBRIR -->
+  <section class="pantalla" id="p-descubrir" data-pestana="descubrir">
+    <div class="barra-sup"><span class="barra-titulo" data-t="descubrir">Descubrir</span></div>
+    <header class="titular">
+      <div>
+        <p class="saludo">&nbsp;</p>
+        <h1 data-t="descubrir">Descubrir</h1>
+        <p class="sub" id="desc-sub"></p>
+      </div>
+      <button class="avatar" data-t-aria="tuPerfil"><span class="avatar-img"></span></button>
+    </header>
+
+    <label class="buscador">
+      <svg><use href="#i-buscar"/></svg>
+      <input id="buscar-dz" type="search" data-t-ph="buscaCualquierCancion" autocomplete="off" spellcheck="false" enterkeyhint="search">
+      <button type="button" class="buscador-borrar" id="buscar-dz-borrar" data-t-aria="borrarBusqueda" hidden><svg><use href="#i-x"/></svg></button>
+    </label>
+
+    <div id="desc-busqueda" hidden>
+      <h3 class="titulo-grupo" id="busqueda-titulo"></h3>
+      <ul class="lista-recs" id="resultados"></ul>
+    </div>
+
+    <div id="desc-recs">
+      <div class="tarjeta-recomendar">
+        <div class="tr-brillo" aria-hidden="true"></div>
+        <div class="tr-icono"><svg><use href="#i-chispas"/></svg></div>
+        <div class="tr-textos">
+          <b data-t="recomendacionesParaTi">Recomendaciones para ti</b>
+          <small id="rec-info"></small>
+        </div>
+        <button class="pildora primaria" id="btn-recomendar"><svg><use href="#i-refrescar"/></svg><span></span></button>
+      </div>
+      <div id="recs"></div>
+    </div>
+  </section>
+
+  <!-- =========================================================== AJUSTES -->
+  <section class="pantalla" id="p-ajustes" data-pestana="ajustes">
+    <div class="barra-sup"><span class="barra-titulo" data-t="ajustes">Ajustes</span></div>
+    <header class="titular"><div><p class="saludo">&nbsp;</p><h1 data-t="ajustes">Ajustes</h1></div></header>
+
+    <button class="tarjeta tarjeta-perfil" id="aj-perfil">
+      <span class="avatar mediano"><span class="avatar-img"></span></span>
+      <span class="tp-textos"><b id="aj-perfil-nombre"></b><small data-t="tuMusicaEnNumeros"></small></span>
+      <svg class="chevron"><use href="#i-dcha"/></svg>
+    </button>
+
+    <h3 class="titulo-grupo" data-t="aspecto">Aspecto</h3>
+    <div class="tarjeta">
+      <div class="temas" id="temas">
+        <button class="muestra" data-tema="medianoche"><i></i><span data-t="tema_medianoche"></span></button>
+        <button class="muestra" data-tema="oceano"><i></i><span data-t="tema_oceano"></span></button>
+        <button class="muestra" data-tema="orquidea"><i></i><span data-t="tema_orquidea"></span></button>
+        <button class="muestra" data-tema="bosque"><i></i><span data-t="tema_bosque"></span></button>
+        <button class="muestra" data-tema="brasa"><i></i><span data-t="tema_brasa"></span></button>
+        <button class="muestra" data-tema="grafito"><i></i><span data-t="tema_grafito"></span></button>
+        <button class="muestra" data-tema="portada"><i></i><span data-t="tema_portada"></span></button>
+      </div>
+      <label class="opcion">
+        <span><b data-t="colorCancion"></b><small data-t="colorCancionTexto"></small></span>
+        <input type="checkbox" class="interruptor" id="aj-acento">
+      </label>
+      <label class="opcion">
+        <span><b data-t="fondoVivo"></b><small data-t="fondoVivoTexto"></small></span>
+        <input type="checkbox" class="interruptor" id="aj-fondo">
+      </label>
+    </div>
+
+    <h3 class="titulo-grupo" data-t="reproduccion">Reproducción</h3>
+    <div class="tarjeta">
+      <label class="opcion">
+        <span><b data-t="fundidos"></b><small data-t="fundidosTexto"></small></span>
+        <input type="checkbox" class="interruptor" id="aj-fundidos">
+      </label>
+      <label class="opcion">
+        <span><b data-t="pantallaEncendida"></b><small data-t="pantallaEncendidaTexto"></small></span>
+        <input type="checkbox" class="interruptor" id="aj-despierta">
+      </label>
+    </div>
+
+    <h3 class="titulo-grupo" data-t="sensacion">Sensación</h3>
+    <div class="tarjeta">
+      <label class="opcion">
+        <span><b data-t="vibracion"></b><small data-t="vibracionTexto"></small></span>
+        <input type="checkbox" class="interruptor" id="aj-vibracion">
+      </label>
+      <div class="opcion columna">
+        <span><b data-t="animaciones"></b><small data-t="animacionesTexto"></small></span>
+        <div class="segmentos pequenos" id="aj-animaciones" style="--n:2">
+          <i class="segmento-luz"></i>
+          <button class="segmento" data-v="completas" data-t="completas"></button>
+          <button class="segmento" data-v="reducidas" data-t="reducidas"></button>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="titulo-grupo" data-t="idioma">Idioma</h3>
+    <div class="tarjeta">
+      <div class="opcion columna">
+        <span><b data-t="idiomaApp"></b><small data-t="idiomaTexto"></small></span>
+        <div class="segmentos pequenos" id="aj-idioma" style="--n:3">
+          <i class="segmento-luz"></i>
+          <button class="segmento" data-v="auto" data-t="automatico"></button>
+          <button class="segmento" data-v="es">Español</button>
+          <button class="segmento" data-v="en">English</button>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="titulo-grupo" data-t="descubrir">Descubrir</h3>
+    <div class="tarjeta">
+      <div class="opcion columna">
+        <span><b data-t="recomendarSolo"></b><small data-t="recomendarSoloTexto"></small></span>
+        <div class="segmentos pequenos" id="aj-frecuencia" style="--n:4">
+          <i class="segmento-luz"></i>
+          <button class="segmento" data-v="0" data-t="nunca"></button>
+          <button class="segmento" data-v="1" data-t="cadaDia"></button>
+          <button class="segmento" data-v="3" data-t="tresDias"></button>
+          <button class="segmento" data-v="7" data-t="semana"></button>
+        </div>
+      </div>
+      <label class="opcion">
+        <span><b data-t="ocultarExplicitas"></b><small data-t="ocultarExplicitasTexto"></small></span>
+        <input type="checkbox" class="interruptor" id="aj-explicitas">
+      </label>
+      <label class="opcion solo-servidor">
+        <span><b data-t="descargarAlCerrar"></b><small data-t="descargarAlCerrarTexto"></small></span>
+        <input type="checkbox" class="interruptor" id="aj-cerrar">
+      </label>
+      <div class="opcion columna solo-servidor">
+        <span><b data-t="calidad"></b><small data-t="calidadTexto"></small></span>
+        <div class="segmentos pequenos" id="aj-calidad" style="--n:2">
+          <i class="segmento-luz"></i>
+          <button class="segmento" data-v="normal" data-t="calidadNormal"></button>
+          <button class="segmento" data-v="alta" data-t="calidadAlta"></button>
+        </div>
+      </div>
+      <button class="opcion boton-opcion" id="aj-olvidar">
+        <span><b data-t="verDescartadas"></b><small id="aj-descartadas"></small></span>
+        <svg><use href="#i-refrescar"/></svg>
+      </button>
+    </div>
+
+    <h3 class="titulo-grupo" data-t="biblioteca">Biblioteca</h3>
+    <div class="tarjeta">
+      <div class="datos">
+        <div><b id="aj-n">0</b><small data-t="cancionesMin"></small></div>
+        <div><b id="aj-dur">0</b><small data-t="deMusica"></small></div>
+        <div><b id="aj-fav">0</b><small data-t="favoritasMin"></small></div>
+      </div>
+      <button class="opcion boton-opcion" id="aj-releer">
+        <span><b data-t="releerCarpeta"></b><small data-t="releerCarpetaTexto"></small></span>
+        <svg><use href="#i-refrescar"/></svg>
+      </button>
+      <button class="opcion boton-opcion" id="aj-historial">
+        <span><b data-t="borrarHistorial"></b><small data-t="borrarHistorialTexto"></small></span>
+        <svg><use href="#i-papelera"/></svg>
+      </button>
+    </div>
+
+    <div class="tarjeta">
+      <button class="opcion boton-opcion peligro" id="aj-restablecer">
+        <span><b data-t="restablecer"></b><small data-t="restablecerTexto"></small></span>
+        <svg><use href="#i-refrescar"/></svg>
+      </button>
+    </div>
+    <p class="pie">Music 2.0 · <span id="aj-modo"></span></p>
+  </section>
+</div>
+
+<!-- ============================================== detalle (artista o lista) -->
+<section class="pantalla apilada" id="detalle" aria-hidden="true">
+  <div class="barra-sup">
+    <button class="atras" id="detalle-atras"><svg><use href="#i-atras"/></svg><span data-t="musica">Música</span></button>
+    <span class="barra-titulo" id="detalle-barra"></span>
+    <button class="boton-redondo suave detalle-opciones" id="detalle-opciones" data-t-aria="masOpciones"><svg><use href="#i-mas"/></svg></button>
+  </div>
+  <header class="cabeza-detalle">
+    <div class="arte" id="detalle-arte"></div>
+    <h1 id="detalle-titulo"></h1>
+    <p class="sub" id="detalle-sub"></p>
+    <div class="fila-acciones">
+      <button class="pildora primaria" id="detalle-play"><svg><use href="#i-play"/></svg><span data-t="reproducir">Reproducir</span></button>
+      <button class="pildora" id="detalle-mezcla"><svg><use href="#i-mezcla"/></svg><span data-t="aleatorio">Aleatorio</span></button>
+    </div>
+  </header>
+  <ul class="lista-canciones" id="detalle-lista"></ul>
+  <button class="pildora centrada" id="detalle-anadir" hidden><svg><use href="#i-plus"/></svg><span data-t="anadirCanciones">Añadir canciones</span></button>
+  <button class="pildora centrada" id="detalle-mas" hidden><svg><use href="#i-chispas"/></svg><span></span></button>
+</section>
+
+<!-- bandeja de pedidos (Descubrir) -->
+<button id="bandeja" hidden>
+  <span class="bandeja-portadas" id="bandeja-portadas"></span>
+  <span class="bandeja-textos"><b id="bandeja-n"></b><small id="bandeja-estado"></small></span>
+  <span class="pildora primaria pequena" id="bandeja-accion"></span>
+  <i class="bandeja-avance" id="bandeja-avance"></i>
+</button>
+
+<!-- Mini reproductor -->
+<div id="mini" hidden>
+  <div class="mini-toque" id="mini-abrir" role="button" tabindex="0" data-t-aria="abrirReproductor">
+    <span class="portada" id="mini-portada"></span>
+    <span class="textos"><b id="mini-titulo"></b><small id="mini-artista"></small></span>
+  </div>
+  <button class="boton-plano" id="mini-play" data-t-aria="reproducirPausar"><svg><use href="#i-play"/></svg></button>
+  <button class="boton-plano" id="mini-sig" data-t-aria="siguiente"><svg><use href="#i-sig"/></svg></button>
+  <i class="mini-barra"><i id="mini-avance"></i></i>
+</div>
+
+<!-- Pestañas -->
+<nav id="pestanas">
+  <i class="pestana-luz"></i>
+  <button class="pestana" data-pestana="musica" aria-current="page"><svg><use href="#i-musica"/></svg><span data-t="musica">Música</span></button>
+  <button class="pestana" data-pestana="descubrir"><svg><use href="#i-chispas"/></svg><span data-t="descubrir">Descubrir</span><i class="globo" id="globo-descubrir" hidden></i></button>
+  <button class="pestana" data-pestana="ajustes"><svg><use href="#i-ajustes"/></svg><span data-t="ajustes">Ajustes</span></button>
+</nav>
+
+<!-- Barra de selección múltiple -->
+<div id="barra-seleccion" hidden>
+  <div class="sel-cabeza">
+    <button class="enlace" id="sel-todas"></button>
+    <b id="sel-n"></b>
+    <button class="enlace fuerte" id="sel-listo" data-t="listo">Listo</button>
+  </div>
+  <div class="sel-acciones">
+    <button id="sel-lista"><svg><use href="#i-lista-mas"/></svg><span data-t="aLista">A una lista</span></button>
+    <button id="sel-cola"><svg><use href="#i-cola"/></svg><span data-t="aLaCola">A la cola</span></button>
+    <button id="sel-fav"><svg><use href="#i-corazon-v"/></svg><span data-t="favorita">Favorita</span></button>
+    <button id="sel-borrar" class="peligro"><svg><use href="#i-papelera"/></svg><span></span></button>
+  </div>
+</div>
+
+<!-- ======================================================= Ahora suena -->
+<section id="hoja" aria-hidden="true">
+  <div class="hoja-fondo" aria-hidden="true"><div id="hoja-fondo-img"></div></div>
+  <div class="hoja-cuerpo">
+    <div class="hoja-cabeza" id="hoja-agarre">
+      <i class="asa"></i>
+      <button class="boton-redondo suave" id="hoja-cerrar" data-t-aria="cerrar"><svg><use href="#i-baja"/></svg></button>
+      <div class="hoja-contexto"><small data-t="reproduciendoDesde">Reproduciendo desde</small><b id="hoja-contexto"></b></div>
+      <button class="boton-redondo suave" id="hoja-mas" data-t-aria="masOpciones"><svg><use href="#i-mas"/></svg></button>
+    </div>
+
+    <div class="hoja-escenario" id="escenario">
+      <div class="portada grande" id="grande-portada">
+        <svg class="estallido" id="estallido"><use href="#i-corazon"/></svg>
+      </div>
+      <div class="panel-vista cola-vista" id="cola-vista" hidden><ul id="cola-lista"></ul></div>
+      <div class="panel-vista letra-vista" id="letra-vista" hidden><div id="letra"></div></div>
+    </div>
+
+    <div class="ficha">
+      <div class="ficha-textos">
+        <h2 id="grande-titulo"></h2>
+        <button class="ficha-artista" id="grande-artista"></button>
+      </div>
+      <button class="boton-redondo suave corazon" id="btn-fav" data-t-aria="favorita" aria-pressed="false"><svg><use href="#i-corazon-v"/></svg></button>
+    </div>
+
+    <div class="progreso" id="progreso" role="slider" tabindex="0" data-t-aria="posicion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="progreso-pista"><div class="progreso-relleno" id="relleno"></div></div>
+      <div class="tiempos"><span id="t-actual">0:00</span><span id="t-resta">-0:00</span></div>
+    </div>
+
+    <div class="mandos">
+      <button class="boton-plano chico" id="btn-mezcla" data-t-aria="aleatorio" aria-pressed="false"><svg><use href="#i-mezcla"/></svg></button>
+      <button class="boton-plano medio" id="btn-ant" data-t-aria="anterior"><svg><use href="#i-ant"/></svg></button>
+      <button class="boton-plano gordo" id="btn-play" data-t-aria="reproducirPausar"><svg><use href="#i-play"/></svg></button>
+      <button class="boton-plano medio" id="btn-sig" data-t-aria="siguiente"><svg><use href="#i-sig"/></svg></button>
+      <button class="boton-plano chico" id="btn-repite" data-t-aria="repetir" aria-pressed="false"><svg><use href="#i-repite"/></svg><i class="uno">1</i></button>
+    </div>
+
+    <div class="hoja-pie">
+      <button class="boton-pie" id="btn-sueno" data-t-aria="temporizador"><svg><use href="#i-luna"/></svg><span id="sueno-texto"></span></button>
+      <button class="boton-pie" id="btn-letra" data-t-aria="letra" aria-pressed="false"><svg><use href="#i-letra"/></svg></button>
+      <button class="boton-pie" id="btn-cola" data-t-aria="aContinuacion" aria-pressed="false"><svg><use href="#i-cola"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- Hojas modales -->
+<div id="velo-modal" hidden></div>
+<section class="modal" id="menu" aria-hidden="true">
+  <i class="asa"></i>
+  <div class="menu-cabeza" id="menu-cabeza"></div>
+  <div class="menu-acciones" id="menu-acciones"></div>
+</section>
+
+<section class="modal" id="editor" aria-hidden="true">
+  <i class="asa"></i>
+  <h2 class="modal-titulo" data-t="editarCancion">Editar canción</h2>
+  <form id="editor-form" autocomplete="off">
+    <label class="campo"><span data-t="titulo">Título</span><input name="titulo" required maxlength="200"></label>
+    <label class="campo"><span data-t="artista">Artista</span><input name="artista" maxlength="200" list="artistas-datos"></label>
+    <label class="campo"><span data-t="album">Álbum</span><input name="album" maxlength="200"></label>
+    <datalist id="artistas-datos"></datalist>
+    <div class="modal-botones">
+      <button type="button" class="pildora" id="editor-cancelar" data-t="cancelar">Cancelar</button>
+      <button type="submit" class="pildora primaria" data-t="guardar">Guardar</button>
+    </div>
+  </form>
+</section>
+
+<section class="modal" id="lista-nueva" aria-hidden="true">
+  <i class="asa"></i>
+  <h2 class="modal-titulo" id="lista-nueva-titulo"></h2>
+  <form id="lista-nueva-form" autocomplete="off">
+    <label class="campo"><input name="nombre" required maxlength="100" data-t-ph="nombreDeLaLista"></label>
+    <div class="modal-botones">
+      <button type="button" class="pildora" id="lista-nueva-cancelar" data-t="cancelar">Cancelar</button>
+      <button type="submit" class="pildora primaria" id="lista-nueva-ok"></button>
+    </div>
+  </form>
+</section>
+
+<section class="modal" id="elegir-lista" aria-hidden="true">
+  <i class="asa"></i>
+  <h2 class="modal-titulo" data-t="anadirAUnaLista">Añadir a una lista</h2>
+  <div class="filas-listas" id="elegir-lista-filas"></div>
+</section>
+
+<section class="modal alto" id="elegir-canciones" aria-hidden="true">
+  <i class="asa"></i>
+  <div class="modal-cabeza"><h2 class="modal-titulo" data-t="anadirCanciones">Añadir canciones</h2></div>
+  <label class="buscador">
+    <svg><use href="#i-buscar"/></svg>
+    <input id="elegir-buscar" type="search" data-t-ph="buscarEnTuMusica" autocomplete="off" spellcheck="false">
+  </label>
+  <ul class="lista-canciones elegibles" id="elegir-filas"></ul>
+  <div class="modal-botones">
+    <button class="pildora" id="elegir-cancelar" data-t="cancelar">Cancelar</button>
+    <button class="pildora primaria" id="elegir-ok"><span></span></button>
+  </div>
+</section>
+
+<section class="modal alto" id="perfil-hoja" aria-hidden="true">
+  <i class="asa"></i>
+  <div class="perfil-cabeza">
+    <button class="avatar grande" id="perfil-foto" data-t-aria="cambiarFoto">
+      <span class="avatar-img"></span>
+      <i class="avatar-camara"><svg><use href="#i-camara"/></svg></i>
+    </button>
+    <input class="perfil-nombre" id="perfil-nombre" maxlength="40" data-t-ph="tuNombre" autocomplete="off" spellcheck="false">
+    <p class="sub" id="perfil-desde"></p>
+    <button class="enlace" id="perfil-quitar-foto" data-t="quitarFoto" hidden>Quitar foto</button>
+  </div>
+  <input type="file" id="perfil-archivo" accept="image/*" hidden>
+  <div id="estadisticas"></div>
+</section>
+
+<section class="modal alto" id="pedidos-hoja" aria-hidden="true">
+  <i class="asa"></i>
+  <div class="modal-cabeza">
+    <h2 class="modal-titulo" data-t="paraDescargar">Para descargar</h2>
+    <button class="enlace" id="pedidos-limpiar" data-t="quitarTerminadas" hidden>Quitar terminadas</button>
+  </div>
+  <p class="modal-nota" id="pedidos-nota"></p>
+  <ul class="lista-pedidos" id="pedidos-lista"></ul>
+  <div class="modal-botones">
+    <button class="pildora" id="pedidos-copiar"><svg><use href="#i-copiar"/></svg><span data-t="copiarLista">Copiar lista</span></button>
+    <button class="pildora primaria" id="pedidos-accion"><svg><use href="#i-descarga"/></svg><span></span></button>
+  </div>
+</section>
+
+<div id="aviso" role="status" hidden><span id="aviso-texto"></span><button id="aviso-accion" class="enlace"></button></div>
+
+<audio id="audio" preload="metadata"></audio>
+<audio id="muestra" preload="none"></audio>
+<script src="textos.js"></script>
+<script src="music.js"></script>
+</body>
+</html>

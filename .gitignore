@@ -1,0 +1,33 @@
+# Todo ignorado por defecto: este repositorio solo publica lo que se nombra abajo.
+# La carpeta de trabajo guarda mp3, un perfil de navegador con cookies, logs y
+# material que no es del proyecto; una lista de permitidos evita que se cuele.
+*
+
+!.gitignore
+!README.md
+!index.html
+!publicar/
+publicar/*
+!publicar/construir.py
+!publicar/cifrar.mjs
+!publicar/sw.js
+!publicar/entrada.html
+!Music.pyw
+!servidor.py
+!descargar_video.py
+!generar_manifiesto.py
+
+!music/
+music/*
+!music/index.html
+!music/music.css
+!music/music.js
+!music/textos.js
+!music/servidor_music.py
+!music/descargar_musica.py
+!music/pedidos.py
+!music/importar_lista.py
+!music/manifest.webmanifest
+!music/icono.png
+!music/icono-180.png
+!music/icono.ico

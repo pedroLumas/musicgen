@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Music">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="robots" content="noindex">
+<title>Music</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icono.png" type="image/png">
+<link rel="apple-touch-icon" href="icono-180.png">
+<style>
+  /* La puerta de Music: pide la contraseña una vez por dispositivo y la recuerda.
+     Lo publicado está cifrado; sin la contraseña no se puede leer nada. */
+  :root { color-scheme: dark; --m1: #5b6cff; --m2: #b46bff; --m3: #2fa6ff; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: #0d1020; color: #fff; overflow: hidden;
+    font-family: -apple-system, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", Roboto, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .fondo { position: fixed; inset: 0; overflow: hidden; }
+  .fondo i { position: absolute; width: 80vmax; height: 80vmax; border-radius: 50%; filter: blur(50px); opacity: .55; mix-blend-mode: screen; animation: deriva 24s ease-in-out infinite alternate; }
+  .fondo i:nth-child(1) { left: -30vmax; top: -30vmax; background: radial-gradient(circle, var(--m1), transparent 65%); }
+  .fondo i:nth-child(2) { right: -35vmax; top: 20vh; background: radial-gradient(circle, var(--m2), transparent 65%); animation-duration: 32s; }
+  .fondo i:nth-child(3) { left: -10vmax; bottom: -40vmax; background: radial-gradient(circle, var(--m3), transparent 65%); animation-duration: 40s; opacity: .4; }
+  @keyframes deriva { to { transform: translate(8vmax, 6vmax) scale(1.15); } }
+  .velo { position: fixed; inset: 0; background: linear-gradient(to bottom, rgba(8,10,24,.25), rgba(8,10,24,.7)); }
+  main { position: relative; height: 100%; display: grid; place-items: center; padding: 24px; }
+  .tarjeta {
+    width: min(100%, 360px); padding: 34px 26px 26px; border-radius: 34px; text-align: center;
+    background: linear-gradient(135deg, rgba(255,255,255,.17), rgba(255,255,255,.06));
+    -webkit-backdrop-filter: blur(26px) saturate(190%); backdrop-filter: blur(26px) saturate(190%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 0 0 1px rgba(255,255,255,.08), 0 24px 60px rgba(0,0,0,.45);
+    animation: entra .7s cubic-bezier(.32,.72,0,1) both;
+  }
+  @keyframes entra { from { opacity: 0; transform: translateY(24px) scale(.97); } }
+  .tarjeta.mal { animation: tiembla .45s; }
+  @keyframes tiembla { 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+  img { width: 92px; height: 92px; border-radius: 24px; box-shadow: 0 14px 34px rgba(0,0,0,.45); }
+  h1 { margin: 18px 0 4px; font-size: 30px; font-weight: 800; letter-spacing: -.03em; }
+  p { margin: 0 0 22px; color: rgba(255,255,255,.66); font-size: 15px; line-height: 1.4; }
+  input {
+    width: 100%; height: 52px; padding: 0 18px; border: 0; outline: 0; border-radius: 18px;
+    background: rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.15);
+    color: #fff; font: inherit; font-size: 17px; text-align: center;
+  }
+  input:focus { box-shadow: 0 0 0 2px rgba(140,150,255,.8); }
+  input::placeholder { color: rgba(255,255,255,.4); }
+  button {
+    width: 100%; height: 52px; margin-top: 12px; border: 0; border-radius: 26px; cursor: pointer;
+    background: rgba(255,255,255,.95); color: #0b0b10; font: inherit; font-size: 16.5px; font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0,0,0,.3); transition: transform .2s, opacity .2s;
+  }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: .55; }
+  .error { min-height: 20px; margin: 12px 0 0; font-size: 14px; color: #ff8a80; }
+  .cargando { display: none; place-items: center; gap: 16px; }
+  body.dentro .tarjeta { display: none; }
+  body.dentro .cargando { display: grid; }
+  .cargando img { animation: late 1.4s ease-in-out infinite; }
+  @keyframes late { 50% { transform: scale(1.06); opacity: .8; } }
+</style>
+</head>
+<body>
+<div class="fondo" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="velo"></div>
+<main>
+  <form class="tarjeta" id="puerta" autocomplete="on">
+    <img src="icono.png" alt="">
+    <h1>Music</h1>
+    <p id="texto">Escribe la contraseña. Solo te la pedirá una vez en este dispositivo.</p>
+    <input type="hidden" name="username" value="music" autocomplete="username">
+    <input id="clave" type="password" autocomplete="current-password" placeholder="Contraseña" required>
+    <button id="entrar">Entrar</button>
+    <div class="error" id="error" role="alert"></div>
+  </form>
+  <div class="cargando"><img src="icono.png" alt=""></div>
+</main>
+<script>
+(() => {
+  const en = !(navigator.language || "es").toLowerCase().startsWith("es");
+  const T = en
+    ? { texto: "Type the password. This device will only ask once.", ph: "Password", entrar: "Enter", abriendo: "Opening…", mal: "Wrong password", sinSw: "This browser can't open the app. Try Safari or Chrome." }
+    : { texto: "Escribe la contraseña. Solo te la pedirá una vez en este dispositivo.", ph: "Contraseña", entrar: "Entrar", abriendo: "Abriendo…", mal: "Contraseña incorrecta", sinSw: "Este navegador no puede abrir la app. Prueba con Safari o Chrome." };
+  const $ = (id) => document.getElementById(id);
+  $("texto").textContent = T.texto; $("clave").placeholder = T.ph; $("entrar").textContent = T.entrar;
+  document.documentElement.lang = en ? "en" : "es";
+
+  function bd() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open("music", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("k");
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  }
+  async function guardada(valor) {
+    const db = await bd();
+    return new Promise((res) => {
+      const st = db.transaction("k", valor === undefined ? "readonly" : "readwrite").objectStore("k");
+      const r = valor === undefined ? st.get("clave") : valor === null ? st.delete("clave") : st.put(valor, "clave");
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => res(null);
+    });
+  }
+  // igual que publicar/cifrar.mjs: sin mayúsculas, tildes ni espacios
+  const normalizar = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, "");
+
+  async function derivar(clave) {
+    const s = await (await fetch("s.json", { cache: "no-store" })).json();
+    const sal = Uint8Array.from(atob(s.sal), (c) => c.charCodeAt(0));
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(normalizar(clave)), "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: sal, iterations: s.vueltas }, base, 512);
+    return crypto.subtle.importKey("raw", bits.slice(0, 32), "AES-GCM", false, ["decrypt"]);
+  }
+  async function vale(k) {
+    try {
+      const buf = await (await fetch("m.bin", { cache: "no-store" })).arrayBuffer();
+      await crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(buf, 0, 12) }, k, new Uint8Array(buf, 12));
+      return true;
+    } catch (_) { return false; }
+  }
+  async function abrir() {
+    document.body.classList.add("dentro");
+    const reg = await navigator.serviceWorker.register("sw.js");
+    await navigator.serviceWorker.ready;
+    (reg.active || navigator.serviceWorker.controller)?.postMessage("olvidar");
+    location.replace("app/");
+  }
+
+  async function empezar() {
+    if (!("serviceWorker" in navigator) || !window.crypto?.subtle || !window.indexedDB) {
+      $("error").textContent = T.sinSw;
+      $("entrar").disabled = true;
+      return;
+    }
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+    const k = await guardada().catch(() => null);
+    if (k) {
+      document.body.classList.add("dentro");
+      if (await vale(k) || !navigator.onLine) return abrir();   // sin conexión se confía en la guardada
+      await guardada(null);                                       // la contraseña cambió: se vuelve a pedir
+      document.body.classList.remove("dentro");
+    }
+    setTimeout(() => $("clave").focus(), 400);
+  }
+
+  $("puerta").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const b = $("entrar");
+    b.disabled = true;
+    b.textContent = T.abriendo;
+    $("error").textContent = "";
+    try {
+      const k = await derivar($("clave").value);
+      if (!(await vale(k))) throw new Error("mal");
+      await guardada(k);
+      try { navigator.vibrate && navigator.vibrate([10, 50, 16]); } catch (_) {}
+      await abrir();
+    } catch (_) {
+      $("error").textContent = T.mal;
+      const t = $("puerta");
+      t.classList.remove("mal"); void t.offsetWidth; t.classList.add("mal");
+      try { navigator.vibrate && navigator.vibrate([24, 50, 24]); } catch (_) {}
+      b.disabled = false;
+      b.textContent = T.entrar;
+      $("clave").select();
+    }
+  });
+  empezar();
+})();
+</script>
+</body>
+</html>
