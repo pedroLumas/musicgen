@@ -23,7 +23,7 @@ from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
 APP = AQUI.parent / "music"
-DESTINO = Path.home() / "mimusica"
+DESTINO = Path.home() / "musicmia"
 CLAVE = AQUI / "clave.json"
 FICHEROS_APP = ("index.html", "music.css", "music.js", "textos.js", "manifest.webmanifest", "icono.png", "icono-180.png")
 
@@ -59,9 +59,14 @@ def preparar_en_claro(dir_: Path) -> int:
 
 
 def main():
+    global DESTINO, CLAVE
     ap = argparse.ArgumentParser()
     ap.add_argument("--clave", help="contraseña nueva")
+    ap.add_argument("--destino", help="otra carpeta de salida (para probar)")
     args = ap.parse_args()
+    if args.destino:                          # una prueba no toca ni el sitio de verdad ni su clave
+        DESTINO = Path(args.destino)
+        CLAVE = DESTINO.with_name(DESTINO.name + "-clave.json")
     clave = leer_clave(args.clave)
 
     DESTINO.mkdir(exist_ok=True)

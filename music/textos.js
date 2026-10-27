@@ -19,7 +19,7 @@ window.MUSIC_TEXTOS = (() => {
     nadaCon: "Nada con «{0}»", buscarlaParaAnadirla: "Buscarla para añadirla",
     vacioTitulo: "Tu música empieza aquí",
     vacioTexto: "Elige canciones en <b>Descubrir</b> y se descargan solas. También aparece lo que dejes en <code>music/pistas</code>.",
-    vacioTextoWeb: "Esta es la versión web: descubre canciones y escucha un trozo de cada una. Para tener tu propia música, instala Music en tu PC: <a href=\"https://github.com/pedroLumas/music#readme\">así se hace</a>.",
+    vacioTextoWeb: "Esta es la versión web: descubre canciones y escucha un trozo de cada una. Para tener tu propia música, instala Music en tu PC: <a href=\"https://github.com/pedroLumas/musicgen#readme\">así se hace</a>.",
     irADescubrir: "Ir a Descubrir", nueva: "Nueva",
     masOpciones: "Más opciones", masOpcionesDe: "Más opciones de {0}",
 
@@ -159,7 +159,7 @@ window.MUSIC_TEXTOS = (() => {
     nadaCon: "Nothing for “{0}”", buscarlaParaAnadirla: "Find it to add it",
     vacioTitulo: "Your music starts here",
     vacioTexto: "Pick songs in <b>Discover</b> and they download by themselves. Anything you drop in <code>music/pistas</code> shows up too.",
-    vacioTextoWeb: "This is the web version: discover songs and preview each one. To have your own music, install Music on your PC: <a href=\"https://github.com/pedroLumas/music#readme\">here's how</a>.",
+    vacioTextoWeb: "This is the web version: discover songs and preview each one. To have your own music, install Music on your PC: <a href=\"https://github.com/pedroLumas/musicgen#readme\">here's how</a>.",
     irADescubrir: "Go to Discover", nueva: "New",
     masOpciones: "More options", masOpcionesDe: "More options for {0}",
 

@@ -5,7 +5,7 @@ y la herramienta para llenarlo. Sin dependencias en la parte web: HTML, CSS y JS
 
 <p align="center"><img src="music/icono.png" width="140" alt="Icono de Music"></p>
 
-**Pruébala en el navegador:** https://pedrolumas.github.io/music/ (la versión web: sin
+**Pruébala en el navegador:** https://pedrolumas.github.io/musicgen/ (la versión web: sin
 biblioteca propia, pero con Descubrir, muestras de 30 s, ajustes y todo el diseño).
 Para tener tu música, instálala en tu PC como se explica abajo.
 
@@ -91,7 +91,7 @@ por dispositivo y se puede instalar en la pantalla de inicio; lo ya escuchado su
 ```bash
 python publicar/construir.py --clave "tu frase"   # la primera vez (o para cambiarla)
 python publicar/construir.py                      # tras añadir música
-cd ~/mimusica && git add -A && git commit -m "Más música" && git push
+cd ~/musicmia && git add -A && git commit -m "Más música" && git push
 ```
 
 Necesita Node (para cifrar). La contraseña queda en `publicar/clave.json`, que no se sube.
