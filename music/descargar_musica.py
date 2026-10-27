@@ -166,12 +166,17 @@ def _puntos(video: dict, pedido: dict, puesto: int) -> float:
 
 def elegir_video(pedido: dict) -> str | None:
     """De los primeros resultados de YouTube, el que más se parece a lo pedido."""
-    consulta = f"{pedido['artista']} - {pedido['titulo']}"
     opciones = {"quiet": True, "no_warnings": True, "extract_flat": "in_playlist",
                 "skip_download": True, "logger": _Callado()}
-    with descargar_video.yt_dlp.YoutubeDL(opciones) as ydl:
-        info = ydl.extract_info(f"ytsearch8:{consulta}", download=False)
-    videos = [v for v in (info or {}).get("entries") or [] if v and v.get("id")]
+    # YouTube a veces devuelve vacía una búsqueda concreta (pasa con "Leaked"): se prueba con otras palabras
+    videos = []
+    for consulta in (f"{pedido['artista']} - {pedido['titulo']}", f"{pedido['artista']} {pedido['titulo']} audio",
+                     f"{pedido['artista']} {pedido['titulo']} lyrics"):
+        with descargar_video.yt_dlp.YoutubeDL(opciones) as ydl:
+            info = ydl.extract_info(f"ytsearch8:{consulta}", download=False)
+        videos = [v for v in (info or {}).get("entries") or [] if v and v.get("id")]
+        if videos:
+            break
     if not videos:
         return None
     mejor = max(enumerate(videos), key=lambda iv: _puntos(iv[1], pedido, iv[0]))[1]
