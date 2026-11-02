@@ -270,8 +270,8 @@ def descargar_pedido(pedido: dict, avance=None) -> str | None:
     if not ficha.exists():
         ficha.write_text(json.dumps({
             "id": vid,
-            "titulo": pedido["titulo"],
-            "artista": pedido["artista"],
+            "titulo": (pedido.get("mostrar") or {}).get("titulo") or pedido["titulo"],
+            "artista": (pedido.get("mostrar") or {}).get("artista") or pedido["artista"],
             "album": pedido.get("album") or "",
             "duracion": pedido.get("duracion"),
             "origen": f"https://www.youtube.com/watch?v={vid}",

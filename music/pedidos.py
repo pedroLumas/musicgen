@@ -134,6 +134,11 @@ def _limpio(p) -> dict | None:
         return None
     if p.get("importada") is True:            # viene de importar_lista.py, no de Descubrir
         out["importada"] = True
+    m = p.get("mostrar")                      # cómo se llama en la biblioteca; el nombre de Deezer solo sirve para buscar el vídeo
+    if isinstance(m, dict):
+        nombres = {k: m[k].strip()[:300] for k in ("titulo", "artista") if isinstance(m.get(k), str) and m[k].strip()}
+        if nombres:
+            out["mostrar"] = nombres
     for k in ("portada", "mini"):             # solo imágenes de verdad, nada de javascript: ni rutas locales
         if not out.get(k, "https://").startswith("https://"):
             out.pop(k)

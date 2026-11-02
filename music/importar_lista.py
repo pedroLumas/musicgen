@@ -6,6 +6,10 @@ Entiende tres tipos de línea (se pueden mezclar):
     1. Nas - I Can  (deezer.com/track/15487960)   la que manda «Enviar» en Descubrir
     Polo G - Pop Out                              una a mano: se busca en Deezer
 
+En las líneas con enlace, lo escrito antes (`Richard Wagner - Ride of the Valkyries`) es el nombre
+que se verá en la biblioteca; el título largo de Deezer solo se usa para encontrar el vídeo.
+Así la música clásica queda por compositor y con títulos legibles.
+
 Y secciones, una por lista:
 
     BIBLIOTECA (56)
@@ -35,6 +39,7 @@ from descargar_musica import _norm
 
 CANCION = re.compile(r"^(.+?)\s+-\s+(.+?)\s*\[(\d+):(\d{2})\]\s*$")
 ENLACE = re.compile(r"deezer\.com/(?:\w+/)?track/(\d+)")
+ENLACE_TODO = re.compile(r"\(?\s*(?:https?://)?(?:www\.)?deezer\.com/(?:\w+/)?track/\d+\s*\)?")
 SUELTA = re.compile(r"^(?:\d+[.)]\s*)?(.+?)\s+[-–—]\s+(.+?)\s*$")
 SECCION = re.compile(r"^(.+?)\s*\(\d+\)\s*$")
 
@@ -55,7 +60,11 @@ def leer_lista(texto: str) -> list[dict]:
             continue
         m = ENLACE.search(linea)
         if m:
-            canciones.append({"deezer": int(m.group(1)), "lista": lista})
+            c = {"deezer": int(m.group(1)), "lista": lista}
+            nombre = SUELTA.match(ENLACE_TODO.sub("", linea).strip())
+            if nombre:                                       # el nombre escrito en la línea es el que se enseña
+                c["mostrar"] = {"artista": nombre.group(1).strip(), "titulo": nombre.group(2).strip()}
+            canciones.append(c)
             continue
         m = CANCION.match(linea)
         if m:
@@ -100,6 +109,8 @@ def pedido_de(c: dict) -> dict | None:
             return None
         p = {"id": f"dz{d['id']}", "deezer": d["id"], "titulo": d["title"], "artista": d["artist"]["name"],
              "duracion": d.get("duration") or 0}
+        if c.get("mostrar"):                                 # p. ej. "Richard Wagner - Ride of the Valkyries"
+            p["mostrar"] = c["mostrar"]
     else:
         d = deezer(c)
         clave = hashlib.md5(f"{c['artista']}|{c['titulo']}".encode()).hexdigest()[:14]
