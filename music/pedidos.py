@@ -183,7 +183,7 @@ def poner_al_cerrar(valor: bool) -> dict:
 
 
 def poner_calidad(valor) -> dict:
-    """normal = mp3 a 192 kbps; alta = 320 kbps (casi el doble de espacio)."""
+    """normal = mp3 a 128 kbps; alta = 320 kbps (casi el doble de espacio)."""
     return cambiar(lambda d: d.update(calidad="alta" if valor == "alta" else "normal"))
 
 

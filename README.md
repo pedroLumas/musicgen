@@ -37,7 +37,7 @@ Para tener tu música, instálala en tu PC como se explica abajo.
 - **Perfil**: foto, nombre y saludo; "tu música en números" (tiempo escuchado, racha,
   última semana, tus artistas y canciones).
 - **Español e inglés**, vibraciones (también en iPhone), fundidos al pausar, pantalla
-  encendida con la letra, animaciones reducidas, calidad de descarga 192/320 y más en Ajustes.
+  encendida con la letra, animaciones reducidas, calidad de descarga 128/320 y más en Ajustes.
 - **Siete colores.** Medianoche, océano, orquídea, bosque, brasa, grafito y "portada"
   (toma los colores de lo que suena).
 - **Borrar sin miedo.** Aviso con *Deshacer*. Lo borrado se mueve a `_CUARENTENA/music/`,

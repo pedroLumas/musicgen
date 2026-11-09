@@ -255,7 +255,7 @@ def descargar_pedido(pedido: dict, avance=None) -> str | None:
             "progress_hooks": [al_bajar], "postprocessor_hooks": [al_procesar],
         }
         import pedidos                                    # la calidad se elige en Ajustes
-        calidad = "320" if pedidos.leer().get("calidad") == "alta" else "192"
+        calidad = "320" if pedidos.leer().get("calidad") == "alta" else "128"
         descargar_video.descargar(f"https://www.youtube.com/watch?v={vid}", solo_audio=True,
                                   destino=PISTAS, plantilla="%(id)s.%(ext)s", extra=extra,
                                   calidad=calidad)
