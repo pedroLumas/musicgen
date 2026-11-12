@@ -166,6 +166,8 @@ def _puntos(video: dict, pedido: dict, puesto: int) -> float:
 
 def elegir_video(pedido: dict) -> str | None:
     """De los primeros resultados de YouTube, el que más se parece a lo pedido."""
+    if re.fullmatch(r"[\w-]{11}", pedido.get("video") or ""):   # vídeo elegido a mano (campo «video» del pedido)
+        return pedido["video"]
     opciones = {"quiet": True, "no_warnings": True, "extract_flat": "in_playlist",
                 "skip_download": True, "logger": _Callado()}
     # YouTube a veces devuelve vacía una búsqueda concreta (pasa con "Leaked"): se prueba con otras palabras

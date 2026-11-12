@@ -119,7 +119,7 @@ def _poner(datos: dict, id_: str, **campos):
 
 # ------------------------------------------------------------------ operaciones
 ID_VALIDO = re.compile(r"^[\w-]{1,40}$")
-TEXTOS = ("titulo", "artista", "album", "portada", "mini", "lista")
+TEXTOS = ("titulo", "artista", "album", "portada", "mini", "lista", "video")
 
 
 def _limpio(p) -> dict | None:
